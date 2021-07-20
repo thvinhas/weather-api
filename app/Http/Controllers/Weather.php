@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class Weather extends Controller
 {
@@ -11,9 +12,9 @@ class Weather extends Controller
         return view('index');
     }
 
-    public function getwather()
+    public function getwather(Request $request)
     {
-        $country = 'Dublin';
+        $country =  empty($request->input('country'))  ?  'Dublin,city,Ireland' : $request->input('country');
 
         $curl = curl_init();
 
@@ -39,8 +40,12 @@ class Weather extends Controller
         curl_close($curl);
 
         if ($err) {
-            echo "cURL Error #:" . $err;
+            Log::error("cURL Error #:" . $err);
         } else {
+            // echo $response;
+            if (json_decode($response)->cod != 200) {
+                Log::error("Error #:" . json_decode($response)->message);
+            }
             return $response;
         }
     }
